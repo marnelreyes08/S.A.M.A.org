@@ -32,6 +32,13 @@
     - Images are saved locally and will persist
     - The hero section (top) can have a custom background image too!
     
+    EDITING SOCIAL MEDIA LINKS:
+    - In edit mode, scroll to the "Get In Touch" section
+    - Click "🔗 Edit Social Media Links" button
+    - Enter the full URL for each platform (e.g., https://facebook.com/yourpage)
+    - Leave blank if you don't want to link that platform
+    - Links are saved and clickable by visitors
+    
     ADDING CONTENT:
     - Events: Click "+ Add Event" to create a new event card
     - Board Members: Click "+ Add Board Member" to add a new member
@@ -813,9 +820,13 @@
             </div>
             
             <div class="social-links">
-                <a href="#" class="editable">FB</a>
-                <a href="#" class="editable">IG</a>
-                <a href="#" class="editable">TW</a>
+                <a href="#" class="editable" id="social-fb" data-platform="Facebook">FB</a>
+                <a href="#" class="editable" id="social-ig" data-platform="Instagram">IG</a>
+                <a href="#" class="editable" id="social-tw" data-platform="Twitter">TW</a>
+            </div>
+            
+            <div class="section-controls" style="margin-top: 30px;">
+                <button class="add-btn" id="editSocialBtn" onclick="editSocialLinks()" style="font-size: 1rem; padding: 10px 20px;">🔗 Edit Social Media Links</button>
             </div>
         </div>
     </section>
@@ -841,13 +852,14 @@
         const BACKGROUNDS_KEY = 'filipinoclub_backgrounds';
         
         // Default password - CHANGE THIS!
-        const DEFAULT_PASSWORD = 'Filipino2026!';
+        const DEFAULT_PASSWORD = '#samasamasa2026!';
         
         // Load saved content on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadContent();
             loadBackgrounds();
             loadMemberPhotos();
+            loadSocialLinks();
             // Initialize password if not set
             if (!localStorage.getItem(PASSWORD_KEY)) {
                 localStorage.setItem(PASSWORD_KEY, DEFAULT_PASSWORD);
@@ -1034,6 +1046,58 @@
                 const element = button.closest('.deletable');
                 element.remove();
                 saveChanges();
+            }
+        }
+        
+        function editSocialLinks() {
+            const fb = document.getElementById('social-fb');
+            const ig = document.getElementById('social-ig');
+            const tw = document.getElementById('social-tw');
+            
+            const fbUrl = prompt('Enter Facebook URL (or leave blank to remove):', fb.href);
+            if (fbUrl !== null) {
+                fb.href = fbUrl || '#';
+                saveSocialLinks();
+            }
+            
+            const igUrl = prompt('Enter Instagram URL (or leave blank to remove):', ig.href);
+            if (igUrl !== null) {
+                ig.href = igUrl || '#';
+                saveSocialLinks();
+            }
+            
+            const twUrl = prompt('Enter Twitter/X URL (or leave blank to remove):', tw.href);
+            if (twUrl !== null) {
+                tw.href = twUrl || '#';
+                saveSocialLinks();
+            }
+            
+            // Show save indicator
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = '✓ Social Links Updated!';
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+                indicator.textContent = '✓ Changes Saved!';
+            }, 2000);
+        }
+        
+        function saveSocialLinks() {
+            const socialLinks = {
+                fb: document.getElementById('social-fb').href,
+                ig: document.getElementById('social-ig').href,
+                tw: document.getElementById('social-tw').href
+            };
+            localStorage.setItem('filipinoclub_social_links', JSON.stringify(socialLinks));
+        }
+        
+        function loadSocialLinks() {
+            const savedLinks = localStorage.getItem('filipinoclub_social_links');
+            if (savedLinks) {
+                const links = JSON.parse(savedLinks);
+                document.getElementById('social-fb').href = links.fb || '#';
+                document.getElementById('social-ig').href = links.ig || '#';
+                document.getElementById('social-tw').href = links.tw || '#';
             }
         }
         
