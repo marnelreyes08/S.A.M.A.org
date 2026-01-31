@@ -1,68 +1,28 @@
 <!DOCTYPE html>
 <!--
-    FILIPINO CLUB WEBSITE - BOARD MEMBER INSTRUCTIONS
+    FILIPINO CLUB WEBSITE - CLOUD-SYNCED VERSION
     
-    DEFAULT PASSWORD: #samasa2026!
+    DEFAULT PASSWORD: Filipino2026!
     
     HOW TO USE:
-    1. Open this file in a web browser
+    1. Open this website URL (hosted on Vercel)
     2. Click "EDIT MODE" button (top right)
     3. Enter the password when prompted
-    4. Click on any text to edit it
-    5. Click "Change Background" buttons to upload section backgrounds
-    6. Click "+ Add Event" to add more events
-    7. Click "+ Add Board Member" to add new board members
-    8. Click "+ Add New Section" to create custom sections
-    9. Click "✕" on any item to delete it
-    10. Click "SAVE CHANGES" to save your edits
-    11. Click "CHANGE PASSWORD" to update the password for security
+    4. Make your edits - they save to the cloud automatically!
+    5. Anyone who opens the website will see your updates
     
-    UPLOADING BOARD MEMBER PHOTOS:
-    - In edit mode, hover over any board member's circle photo
-    - Click "📷 Upload Photo" that appears at the bottom
-    - Select an image from your computer
-    - The photo will replace the initials
-    - Photos are saved and will persist
-    - Supported formats: JPG, PNG, GIF, WEBP
+    FEATURES:
+    - Edit text by clicking on it
+    - Upload background images for any section
+    - Upload board member photos
+    - Add/delete events, board members, and custom sections
+    - Edit social media links
+    - All changes sync across all devices in real-time!
     
-    EDITING BACKGROUNDS:
-    - In edit mode, hover over any section to see the "Change Background" button
-    - Click it and select an image from your computer
-    - Supported formats: JPG, PNG, GIF, WEBP
-    - Images are saved locally and will persist
-    - The hero section (top) can have a custom background image too!
-    
-    EDITING SOCIAL MEDIA LINKS:
-    - In edit mode, scroll to the "Get In Touch" section
-    - Click "🔗 Edit Social Media Links" button
-    - Enter the full URL for each platform (e.g., https://facebook.com/yourpage)
-    - Leave blank if you don't want to link that platform
-    - Links are saved and clickable by visitors
-    - To remove a social media icon entirely, hover over it and click the "✕" button
-    
-    ADDING CONTENT:
-    - Events: Click "+ Add Event" to create a new event card
-    - Board Members: Click "+ Add Board Member" to add a new member
-    - Custom Sections: Click "+ Add New Section" to create entirely new sections
-    - All new content is fully editable - just click and type
-    
-    DELETING CONTENT:
-    - In edit mode, hover over any event, board member, or custom section
-    - Click the "✕" button that appears to delete it
-    - Confirm the deletion when prompted
-    
-    IMPORTANT FOR NEW BOARD MEMBERS:
-    - The first time you use this, the default password is: #samasa2026!
-    - IMMEDIATELY change the password using the "Change Password" button
-    - Share the new password only with current board members
-    - All changes (text, backgrounds, added content) are saved locally in the browser
-    - To share the updated website, just send this HTML file
-    
-    PASSING IT DOWN:
-    - Give this file to the next board
-    - Share the current password with them securely
-    - They can continue editing and update the password
-    - Background images and dynamic content are stored in browser - they may need to re-upload/recreate on new computers
+    HOSTING:
+    - Hosted on Vercel
+    - Database on Supabase
+    - Changes are permanent and visible to everyone
 -->
 <html lang="en">
 <head>
@@ -70,6 +30,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filipino Club</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Karla:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #0038A8;
@@ -91,6 +52,40 @@
             background: var(--cream);
             color: var(--text);
             overflow-x: hidden;
+        }
+        
+        /* Loading spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--yellow);
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         /* Edit Mode Styles */
@@ -652,39 +647,39 @@
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
     <!-- Edit Mode Toggle -->
     <button class="edit-toggle" onclick="toggleEditMode()">EDIT MODE</button>
     
     <!-- Edit Mode Banner -->
     <div class="edit-mode-banner" id="editBanner">
         <div>
-            <strong>✏️ Edit Mode Active</strong> - Click on any text to edit it. Right-click sections to change backgrounds.
+            <strong>✏️ Edit Mode Active</strong> - Click on any text to edit it. Changes save to cloud automatically!
         </div>
         <div style="display: flex; gap: 10px;">
             <button onclick="changePassword()" style="background: white; color: var(--dark); border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 600;">
                 🔑 Change Password
             </button>
-            <button onclick="saveChanges()" style="background: white; color: var(--secondary); border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 600;">
-                💾 Save Changes
-            </button>
         </div>
     </div>
     
-    <!-- Hidden file input for background uploads -->
-    <input type="file" id="bgImageInput" accept="image/*" style="display: none;">
-    
-    <!-- Hidden file input for member photo uploads -->
-    <input type="file" id="memberPhotoInput" accept="image/*" style="display: none;">
-    
     <!-- Save Indicator -->
     <div class="save-indicator" id="saveIndicator">✓ Changes Saved!</div>
+    
+    <!-- Hidden file inputs -->
+    <input type="file" id="bgImageInput" accept="image/*" style="display: none;">
+    <input type="file" id="memberPhotoInput" accept="image/*" style="display: none;">
     
     <!-- Hero Section -->
     <section class="hero bg-changeable" id="section-hero">
         <button class="bg-change-btn" onclick="changeBackground('section-hero')" style="display: none;">🖼️ Change Hero Background</button>
         <div class="hero-content">
-            <h1 class="editable">FILIPINO CLUB</h1>
-            <p class="tagline editable">Celebrating culture, building community</p>
+            <h1 class="editable" data-field="hero-title">FILIPINO CLUB</h1>
+            <p class="tagline editable" data-field="hero-tagline">Celebrating culture, building community</p>
         </div>
     </section>
     
@@ -692,8 +687,8 @@
     <section class="about bg-changeable" id="section-about">
         <button class="bg-change-btn" onclick="changeBackground('section-about')" style="display: none;">🖼️ Change Background</button>
         <div class="container">
-            <h2 class="section-title editable">About Us</h2>
-            <p class="about-text editable">
+            <h2 class="section-title editable" data-field="about-title">About Us</h2>
+            <p class="about-text editable" data-field="about-text">
                 Welcome to Filipino Club! We are a vibrant community dedicated to celebrating Filipino culture, 
                 heritage, and traditions. Through cultural events, educational programs, and community service, 
                 we create a welcoming space for everyone to learn about and appreciate the rich Filipino heritage.
@@ -701,15 +696,15 @@
             
             <div class="mission-vision">
                 <div class="card">
-                    <h3 class="editable">Our Mission</h3>
-                    <p class="editable">
+                    <h3 class="editable" data-field="mission-title">Our Mission</h3>
+                    <p class="editable" data-field="mission-text">
                         To foster cultural awareness and pride in Filipino heritage while building lasting 
                         connections within our community through engaging programs and meaningful experiences.
                     </p>
                 </div>
                 <div class="card">
-                    <h3 class="editable">Our Vision</h3>
-                    <p class="editable">
+                    <h3 class="editable" data-field="vision-title">Our Vision</h3>
+                    <p class="editable" data-field="vision-text">
                         A thriving community where Filipino culture is celebrated, preserved, and shared with 
                         future generations, creating bridges of understanding and appreciation.
                     </p>
@@ -722,38 +717,10 @@
     <section class="events bg-changeable" id="section-events">
         <button class="bg-change-btn" onclick="changeBackground('section-events')" style="display: none;">🖼️ Change Background</button>
         <div class="container">
-            <h2 class="section-title editable">Upcoming Events</h2>
+            <h2 class="section-title editable" data-field="events-title">Upcoming Events</h2>
             
             <div class="events-grid" id="eventsGrid">
-                <div class="event-card deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <h4 class="editable">Cultural Night</h4>
-                    <p class="date editable">March 15, 2026 • 6:00 PM</p>
-                    <p class="editable">
-                        Join us for an evening of traditional Filipino performances, cuisine, and celebrations. 
-                        Experience the vibrant culture through dance, music, and food.
-                    </p>
-                </div>
-                
-                <div class="event-card deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <h4 class="editable">Language Workshop</h4>
-                    <p class="date editable">Every Tuesday • 5:00 PM</p>
-                    <p class="editable">
-                        Learn Tagalog and other Filipino languages in our weekly interactive sessions. 
-                        Perfect for beginners and advanced learners alike!
-                    </p>
-                </div>
-                
-                <div class="event-card deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <h4 class="editable">Community Potluck</h4>
-                    <p class="date editable">Last Friday of Month • 7:00 PM</p>
-                    <p class="editable">
-                        Share your favorite Filipino dishes and recipes with the community. 
-                        A delicious way to connect and celebrate our culinary heritage.
-                    </p>
-                </div>
+                <!-- Events will be loaded from database -->
             </div>
             
             <div class="section-controls">
@@ -766,52 +733,10 @@
     <section class="board bg-changeable" id="section-board">
         <button class="bg-change-btn" onclick="changeBackground('section-board')" style="display: none;">🖼️ Change Background</button>
         <div class="container">
-            <h2 class="section-title editable">Board Members</h2>
+            <h2 class="section-title editable" data-field="board-title">Board Members</h2>
             
             <div class="board-grid" id="boardGrid">
-                <div class="board-member deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <div class="member-photo editable" id="member-photo-1">
-                        MP
-                        <div class="member-photo-upload" onclick="uploadMemberPhoto('member-photo-1')" style="display: none;">📷 Upload Photo</div>
-                    </div>
-                    <h4 class="editable">Maria Santos</h4>
-                    <p class="position editable">President</p>
-                    <p class="email editable">president@filipinoclub.org</p>
-                </div>
-                
-                <div class="board-member deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <div class="member-photo editable" id="member-photo-2">
-                        JD
-                        <div class="member-photo-upload" onclick="uploadMemberPhoto('member-photo-2')" style="display: none;">📷 Upload Photo</div>
-                    </div>
-                    <h4 class="editable">Jose Dela Cruz</h4>
-                    <p class="position editable">Vice President</p>
-                    <p class="email editable">vp@filipinoclub.org</p>
-                </div>
-                
-                <div class="board-member deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <div class="member-photo editable" id="member-photo-3">
-                        AR
-                        <div class="member-photo-upload" onclick="uploadMemberPhoto('member-photo-3')" style="display: none;">📷 Upload Photo</div>
-                    </div>
-                    <h4 class="editable">Anna Reyes</h4>
-                    <p class="position editable">Secretary</p>
-                    <p class="email editable">secretary@filipinoclub.org</p>
-                </div>
-                
-                <div class="board-member deletable">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none;">✕</button>
-                    <div class="member-photo editable" id="member-photo-4">
-                        MC
-                        <div class="member-photo-upload" onclick="uploadMemberPhoto('member-photo-4')" style="display: none;">📷 Upload Photo</div>
-                    </div>
-                    <h4 class="editable">Miguel Cruz</h4>
-                    <p class="position editable">Treasurer</p>
-                    <p class="email editable">treasurer@filipinoclub.org</p>
-                </div>
+                <!-- Board members will be loaded from database -->
             </div>
             
             <div class="section-controls">
@@ -824,31 +749,14 @@
     <section class="contact bg-changeable" id="section-contact">
         <button class="bg-change-btn" onclick="changeBackground('section-contact')" style="display: none;">🖼️ Change Background</button>
         <div class="container">
-            <h2 class="section-title editable">Get In Touch</h2>
+            <h2 class="section-title editable" data-field="contact-title">Get In Touch</h2>
             <div class="contact-info">
-                <p class="editable">Email: <a href="mailto:info@filipinoclub.org">info@filipinoclub.org</a></p>
-                <p class="editable">Follow us on social media to stay updated!</p>
+                <p class="editable" data-field="contact-email">Email: <a href="mailto:info@filipinoclub.org">info@filipinoclub.org</a></p>
+                <p class="editable" data-field="contact-text">Follow us on social media to stay updated!</p>
             </div>
             
-            <div class="social-links">
-                <a href="#" class="deletable" id="social-fb-container" data-platform="Facebook" style="position: relative;">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none; top: -5px; right: -5px;">✕</button>
-                    <svg id="social-fb" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                </a>
-                <a href="#" class="deletable" id="social-ig-container" data-platform="Instagram" style="position: relative;">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none; top: -5px; right: -5px;">✕</button>
-                    <svg id="social-ig" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                </a>
-                <a href="#" class="deletable" id="social-tw-container" data-platform="Twitter" style="position: relative;">
-                    <button class="delete-btn" onclick="deleteElement(this)" style="display: none; top: -5px; right: -5px;">✕</button>
-                    <svg id="social-tw" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                </a>
+            <div class="social-links" id="socialLinks">
+                <!-- Social links will be loaded from database -->
             </div>
             
             <div class="section-controls" style="margin-top: 30px;">
@@ -867,45 +775,265 @@
     
     <!-- Footer -->
     <footer>
-        <p class="editable">© 2026 Filipino Club. All rights reserved. | Mabuhay! 🇵🇭</p>
+        <p class="editable" data-field="footer-text">© 2026 Filipino Club. All rights reserved. | Mabuhay! 🇵🇭</p>
     </footer>
     
     <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://qivbayioflggugjyrsny.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpdmJheWlvZmxnZ3Vnanlyc255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MzQzNDUsImV4cCI6MjA4NTQxMDM0NX0.-Tnqrtgo2VeJOt2Yzk13lBUt81gb0m-xjr2-wRFso_I';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
         let editMode = false;
         let isAuthenticated = false;
-        const STORAGE_KEY = 'filipinoclub_content';
-        const PASSWORD_KEY = 'filipinoclub_password';
-        const BACKGROUNDS_KEY = 'filipinoclub_backgrounds';
+        const DEFAULT_PASSWORD = 'Filipino2026!';
         
-        // Default password - CHANGE THIS!
-        const DEFAULT_PASSWORD = '#samasa2026!';
-        
-        // Load saved content on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadContent();
-            loadBackgrounds();
-            loadMemberPhotos();
-            loadSocialLinks();
-            // Initialize password if not set
-            if (!localStorage.getItem(PASSWORD_KEY)) {
-                localStorage.setItem(PASSWORD_KEY, DEFAULT_PASSWORD);
-            }
+        // Load content on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadFromDatabase();
+            hideLoading();
         });
         
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+        
+        async function loadFromDatabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('website_content')
+                    .select('*')
+                    .eq('content_type', 'main')
+                    .single();
+                
+                if (error) throw error;
+                
+                if (data && data.content_data) {
+                    const content = data.content_data;
+                    
+                    // Load text fields
+                    if (content.text_fields) {
+                        Object.keys(content.text_fields).forEach(field => {
+                            const element = document.querySelector(`[data-field="${field}"]`);
+                            if (element) {
+                                element.innerHTML = content.text_fields[field];
+                            }
+                        });
+                    }
+                    
+                    // Load events
+                    if (content.events) {
+                        renderEvents(content.events);
+                    }
+                    
+                    // Load board members
+                    if (content.board_members) {
+                        renderBoardMembers(content.board_members);
+                    }
+                    
+                    // Load social links
+                    if (content.social_links) {
+                        renderSocialLinks(content.social_links);
+                    }
+                    
+                    // Load backgrounds
+                    if (content.backgrounds) {
+                        loadBackgrounds(content.backgrounds);
+                    }
+                    
+                    // Load custom sections
+                    if (content.custom_sections) {
+                        renderCustomSections(content.custom_sections);
+                    }
+                    
+                    // Load password
+                    if (content.password) {
+                        localStorage.setItem('filipinoclub_password', content.password);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading from database:', error);
+            }
+        }
+        
+        function renderEvents(events) {
+            const grid = document.getElementById('eventsGrid');
+            grid.innerHTML = events.map((event, index) => `
+                <div class="event-card deletable" data-event-id="${index}">
+                    <button class="delete-btn" onclick="deleteEvent(${index})" style="display: none;">✕</button>
+                    <h4 class="editable" data-field="event-${index}-title">${event.title}</h4>
+                    <p class="date editable" data-field="event-${index}-date">${event.date}</p>
+                    <p class="editable" data-field="event-${index}-description">${event.description}</p>
+                </div>
+            `).join('');
+        }
+        
+        function renderBoardMembers(members) {
+            const grid = document.getElementById('boardGrid');
+            grid.innerHTML = members.map((member, index) => `
+                <div class="board-member deletable" data-member-id="${index}">
+                    <button class="delete-btn" onclick="deleteBoardMember(${index})" style="display: none;">✕</button>
+                    <div class="member-photo editable" id="member-photo-${index}" data-field="member-${index}-photo" style="${member.photo ? `background-image: url(${member.photo}); font-size: 0;` : ''}">
+                        ${member.initials || 'AB'}
+                        <div class="member-photo-upload" onclick="uploadMemberPhoto('member-photo-${index}', ${index})" style="display: none;">📷 Upload Photo</div>
+                    </div>
+                    <h4 class="editable" data-field="member-${index}-name">${member.name}</h4>
+                    <p class="position editable" data-field="member-${index}-position">${member.position}</p>
+                    <p class="email editable" data-field="member-${index}-email">${member.email}</p>
+                </div>
+            `).join('');
+        }
+        
+        function renderSocialLinks(links) {
+            const container = document.getElementById('socialLinks');
+            const socialIcons = {
+                facebook: '<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>',
+                instagram: '<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>',
+                twitter: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>'
+            };
+            
+            container.innerHTML = links.map((link, index) => `
+                <a href="${link.url}" class="deletable" id="social-${link.platform}-container" data-platform="${link.platform}" style="position: relative;">
+                    <button class="delete-btn" onclick="deleteSocialLink(${index})" style="display: none; top: -5px; right: -5px;">✕</button>
+                    <svg id="social-${link.platform}" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white">
+                        ${socialIcons[link.platform] || ''}
+                    </svg>
+                </a>
+            `).join('');
+        }
+        
+        function renderCustomSections(sections) {
+            const container = document.getElementById('customSectionsContainer');
+            container.innerHTML = sections.map((section, index) => `
+                <section class="custom-section bg-changeable deletable" id="${section.id}">
+                    <button class="delete-btn" onclick="deleteCustomSection(${index})" style="top: 50px; right: 50px; font-size: 20px; padding: 10px 15px;">✕</button>
+                    <button class="bg-change-btn" onclick="changeBackground('${section.id}')" style="display: none;">🖼️ Change Background</button>
+                    <div class="container">
+                        <h2 class="section-title editable" data-field="custom-${index}-title">${section.title}</h2>
+                        <p class="about-text editable" data-field="custom-${index}-text">${section.text}</p>
+                    </div>
+                </section>
+            `).join('');
+        }
+        
+        function loadBackgrounds(backgrounds) {
+            Object.keys(backgrounds).forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section && backgrounds[sectionId]) {
+                    section.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${backgrounds[sectionId]})`;
+                    section.style.backgroundSize = 'cover';
+                    section.style.backgroundPosition = 'center';
+                    section.style.backgroundAttachment = 'fixed';
+                }
+            });
+        }
+        
+        async function saveToDatabase() {
+            try {
+                const content = {
+                    text_fields: {},
+                    events: [],
+                    board_members: [],
+                    social_links: [],
+                    backgrounds: {},
+                    custom_sections: [],
+                    password: localStorage.getItem('filipinoclub_password') || DEFAULT_PASSWORD
+                };
+                
+                // Collect text fields
+                document.querySelectorAll('[data-field]').forEach(el => {
+                    const field = el.getAttribute('data-field');
+                    if (field && !field.includes('event-') && !field.includes('member-') && !field.includes('custom-')) {
+                        content.text_fields[field] = el.innerHTML;
+                    }
+                });
+                
+                // Collect events
+                document.querySelectorAll('[data-event-id]').forEach(eventEl => {
+                    const id = eventEl.getAttribute('data-event-id');
+                    content.events.push({
+                        title: document.querySelector(`[data-field="event-${id}-title"]`)?.innerHTML || '',
+                        date: document.querySelector(`[data-field="event-${id}-date"]`)?.innerHTML || '',
+                        description: document.querySelector(`[data-field="event-${id}-description"]`)?.innerHTML || ''
+                    });
+                });
+                
+                // Collect board members
+                document.querySelectorAll('[data-member-id]').forEach(memberEl => {
+                    const id = memberEl.getAttribute('data-member-id');
+                    const photoEl = document.getElementById(`member-photo-${id}`);
+                    content.board_members.push({
+                        initials: photoEl?.textContent?.trim() || 'AB',
+                        photo: photoEl?.style?.backgroundImage ? photoEl.style.backgroundImage.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1') : '',
+                        name: document.querySelector(`[data-field="member-${id}-name"]`)?.innerHTML || '',
+                        position: document.querySelector(`[data-field="member-${id}-position"]`)?.innerHTML || '',
+                        email: document.querySelector(`[data-field="member-${id}-email"]`)?.innerHTML || ''
+                    });
+                });
+                
+                // Collect social links
+                document.querySelectorAll('#socialLinks a').forEach(linkEl => {
+                    const platform = linkEl.getAttribute('data-platform');
+                    content.social_links.push({
+                        platform: platform,
+                        url: linkEl.href
+                    });
+                });
+                
+                // Collect backgrounds
+                document.querySelectorAll('.bg-changeable').forEach(section => {
+                    if (section.style.backgroundImage && section.id) {
+                        const match = section.style.backgroundImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+                        if (match && match[1] && match[1].startsWith('data:')) {
+                            content.backgrounds[section.id] = match[1];
+                        }
+                    }
+                });
+                
+                // Collect custom sections
+                document.querySelectorAll('#customSectionsContainer section').forEach((section, index) => {
+                    content.custom_sections.push({
+                        id: section.id,
+                        title: document.querySelector(`[data-field="custom-${index}-title"]`)?.innerHTML || '',
+                        text: document.querySelector(`[data-field="custom-${index}-text"]`)?.innerHTML || ''
+                    });
+                });
+                
+                // Save to Supabase
+                const { error } = await supabase
+                    .from('website_content')
+                    .update({ content_data: content, updated_at: new Date() })
+                    .eq('content_type', 'main');
+                
+                if (error) throw error;
+                
+                showSaveIndicator('✓ Saved to Cloud!');
+            } catch (error) {
+                console.error('Error saving to database:', error);
+                showSaveIndicator('✗ Save failed!');
+            }
+        }
+        
+        function showSaveIndicator(message) {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = message;
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+        
         function toggleEditMode() {
-            // If not authenticated and trying to enter edit mode, ask for password
             if (!editMode && !isAuthenticated) {
+                const savedPassword = localStorage.getItem('filipinoclub_password') || DEFAULT_PASSWORD;
                 const password = prompt('Enter board member password to access edit mode:');
                 
-                if (!password) {
-                    return; // User cancelled
-                }
+                if (!password) return;
                 
-                const storedPassword = localStorage.getItem(PASSWORD_KEY);
-                
-                if (password === storedPassword) {
+                if (password === savedPassword) {
                     isAuthenticated = true;
-                    alert('✓ Access granted! You can now edit the website.');
+                    alert('✓ Access granted! Your edits will save to the cloud automatically.');
                 } else {
                     alert('✗ Incorrect password. Access denied.');
                     return;
@@ -917,37 +1045,23 @@
             const banner = document.getElementById('editBanner');
             const button = document.querySelector('.edit-toggle');
             const bgButtons = document.querySelectorAll('.bg-change-btn');
+            const addButtons = document.querySelectorAll('.add-btn');
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const photoUploadButtons = document.querySelectorAll('.member-photo-upload');
             
             editables.forEach(el => {
                 el.contentEditable = editMode;
-            });
-            
-            // Show/hide background change buttons
-            bgButtons.forEach(btn => {
-                btn.style.display = editMode ? 'block' : 'none';
-            });
-            
-            // Show/hide add buttons
-            const addButtons = document.querySelectorAll('.add-btn');
-            addButtons.forEach(btn => {
                 if (editMode) {
-                    btn.classList.add('show');
+                    el.addEventListener('blur', saveToDatabase);
                 } else {
-                    btn.classList.remove('show');
+                    el.removeEventListener('blur', saveToDatabase);
                 }
             });
             
-            // Show/hide delete buttons
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(btn => {
-                btn.style.display = editMode ? 'block' : 'none';
-            });
-            
-            // Show/hide member photo upload buttons
-            const photoUploadButtons = document.querySelectorAll('.member-photo-upload');
-            photoUploadButtons.forEach(btn => {
-                btn.style.display = editMode ? 'block' : 'none';
-            });
+            bgButtons.forEach(btn => btn.style.display = editMode ? 'block' : 'none');
+            addButtons.forEach(btn => editMode ? btn.classList.add('show') : btn.classList.remove('show'));
+            deleteButtons.forEach(btn => btn.style.display = editMode ? 'block' : 'none');
+            photoUploadButtons.forEach(btn => btn.style.display = editMode ? 'block' : 'none');
             
             if (editMode) {
                 banner.classList.add('active');
@@ -957,266 +1071,12 @@
                 banner.classList.remove('active');
                 button.textContent = 'EDIT MODE';
                 button.style.background = 'var(--primary)';
-                isAuthenticated = false; // Reset authentication when exiting
+                isAuthenticated = false;
             }
         }
         
-        function uploadMemberPhoto(photoId) {
-            const input = document.getElementById('memberPhotoInput');
-            
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const photoElement = document.getElementById(photoId);
-                    const imageData = event.target.result;
-                    
-                    // Set background image and hide text
-                    photoElement.style.backgroundImage = `url(${imageData})`;
-                    photoElement.style.fontSize = '0'; // Hide initials text
-                    
-                    // Save to member photos storage
-                    saveMemberPhoto(photoId, imageData);
-                    
-                    // Show save indicator
-                    const indicator = document.getElementById('saveIndicator');
-                    indicator.textContent = '✓ Photo Uploaded!';
-                    indicator.classList.add('show');
-                    setTimeout(() => {
-                        indicator.classList.remove('show');
-                        indicator.textContent = '✓ Changes Saved!';
-                    }, 2000);
-                };
-                reader.readAsDataURL(file);
-            };
-            
-            input.click();
-        }
-        
-        function saveMemberPhoto(photoId, imageData) {
-            let memberPhotos = JSON.parse(localStorage.getItem('filipinoclub_member_photos') || '{}');
-            memberPhotos[photoId] = imageData;
-            localStorage.setItem('filipinoclub_member_photos', JSON.stringify(memberPhotos));
-        }
-        
-        function loadMemberPhotos() {
-            const memberPhotos = JSON.parse(localStorage.getItem('filipinoclub_member_photos') || '{}');
-            
-            for (let photoId in memberPhotos) {
-                const photoElement = document.getElementById(photoId);
-                if (photoElement && memberPhotos[photoId]) {
-                    photoElement.style.backgroundImage = `url(${memberPhotos[photoId]})`;
-                    photoElement.style.fontSize = '0'; // Hide initials text
-                }
-            }
-        }
-        
-        function addEvent() {
-            const grid = document.getElementById('eventsGrid');
-            const newEvent = document.createElement('div');
-            newEvent.className = 'event-card deletable';
-            newEvent.innerHTML = `
-                <button class="delete-btn" onclick="deleteElement(this)">✕</button>
-                <h4 class="editable" contenteditable="true">New Event</h4>
-                <p class="date editable" contenteditable="true">Date • Time</p>
-                <p class="editable" contenteditable="true">Click to add event description...</p>
-            `;
-            grid.appendChild(newEvent);
-            saveChanges();
-        }
-        
-        function addBoardMember() {
-            const grid = document.getElementById('boardGrid');
-            const newMember = document.createElement('div');
-            const photoId = 'member-photo-' + Date.now();
-            newMember.className = 'board-member deletable';
-            newMember.innerHTML = `
-                <button class="delete-btn" onclick="deleteElement(this)">✕</button>
-                <div class="member-photo editable" id="${photoId}" contenteditable="true">
-                    AB
-                    <div class="member-photo-upload" onclick="uploadMemberPhoto('${photoId}')">📷 Upload Photo</div>
-                </div>
-                <h4 class="editable" contenteditable="true">Name</h4>
-                <p class="position editable" contenteditable="true">Position</p>
-                <p class="email editable" contenteditable="true">email@filipinoclub.org</p>
-            `;
-            grid.appendChild(newMember);
-            saveChanges();
-        }
-        
-        function addCustomSection() {
-            const container = document.getElementById('customSectionsContainer');
-            const sectionId = 'custom-section-' + Date.now();
-            const newSection = document.createElement('section');
-            newSection.className = 'custom-section bg-changeable deletable';
-            newSection.id = sectionId;
-            newSection.innerHTML = `
-                <button class="delete-btn" onclick="deleteElement(this)" style="top: 50px; right: 50px; font-size: 20px; padding: 10px 15px;">✕</button>
-                <button class="bg-change-btn" onclick="changeBackground('${sectionId}')">🖼️ Change Background</button>
-                <div class="container">
-                    <h2 class="section-title editable" contenteditable="true">New Section Title</h2>
-                    <p class="about-text editable" contenteditable="true">
-                        Click to edit this section. Add your content here. You can include information about 
-                        special programs, achievements, history, or anything else relevant to your club!
-                    </p>
-                </div>
-            `;
-            container.appendChild(newSection);
-            saveChanges();
-        }
-        
-        function deleteElement(button) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                const element = button.closest('.deletable');
-                element.remove();
-                saveChanges();
-            }
-        }
-        
-        function editSocialLinks() {
-            const fbContainer = document.getElementById('social-fb-container');
-            const igContainer = document.getElementById('social-ig-container');
-            const twContainer = document.getElementById('social-tw-container');
-            
-            const fbUrl = prompt('Enter Facebook URL (e.g., https://facebook.com/yourpage):', fbContainer.href);
-            if (fbUrl !== null) {
-                fbContainer.href = fbUrl || '#';
-                saveSocialLinks();
-            }
-            
-            const igUrl = prompt('Enter Instagram URL (e.g., https://instagram.com/yourpage):', igContainer.href);
-            if (igUrl !== null) {
-                igContainer.href = igUrl || '#';
-                saveSocialLinks();
-            }
-            
-            const twUrl = prompt('Enter Twitter/X URL (e.g., https://twitter.com/yourpage):', twContainer.href);
-            if (twUrl !== null) {
-                twContainer.href = twUrl || '#';
-                saveSocialLinks();
-            }
-            
-            // Show save indicator
-            const indicator = document.getElementById('saveIndicator');
-            indicator.textContent = '✓ Social Links Updated!';
-            indicator.classList.add('show');
-            setTimeout(() => {
-                indicator.classList.remove('show');
-                indicator.textContent = '✓ Changes Saved!';
-            }, 2000);
-        }
-        
-        function saveSocialLinks() {
-            const socialLinks = {
-                fb: document.getElementById('social-fb-container').href,
-                ig: document.getElementById('social-ig-container').href,
-                tw: document.getElementById('social-tw-container').href
-            };
-            localStorage.setItem('filipinoclub_social_links', JSON.stringify(socialLinks));
-        }
-        
-        function loadSocialLinks() {
-            const savedLinks = localStorage.getItem('filipinoclub_social_links');
-            if (savedLinks) {
-                const links = JSON.parse(savedLinks);
-                const fbContainer = document.getElementById('social-fb-container');
-                const igContainer = document.getElementById('social-ig-container');
-                const twContainer = document.getElementById('social-tw-container');
-                
-                if (fbContainer) fbContainer.href = links.fb || '#';
-                if (igContainer) igContainer.href = links.ig || '#';
-                if (twContainer) twContainer.href = links.tw || '#';
-            }
-        }
-        
-        function changeBackground(sectionId) {
-            const input = document.getElementById('bgImageInput');
-            
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const section = document.getElementById(sectionId);
-                    const imageData = event.target.result;
-                    
-                    // Apply background image
-                    section.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${imageData})`;
-                    section.style.backgroundSize = 'cover';
-                    section.style.backgroundPosition = 'center';
-                    section.style.backgroundAttachment = 'fixed';
-                    
-                    // Save to localStorage
-                    saveBackground(sectionId, imageData);
-                    
-                    // Show save indicator
-                    const indicator = document.getElementById('saveIndicator');
-                    indicator.textContent = '✓ Background Saved!';
-                    indicator.classList.add('show');
-                    setTimeout(() => {
-                        indicator.classList.remove('show');
-                        indicator.textContent = '✓ Changes Saved!';
-                    }, 2000);
-                };
-                reader.readAsDataURL(file);
-            };
-            
-            input.click();
-        }
-        
-        function saveBackground(sectionId, imageData) {
-            let backgrounds = JSON.parse(localStorage.getItem(BACKGROUNDS_KEY) || '{}');
-            backgrounds[sectionId] = imageData;
-            localStorage.setItem(BACKGROUNDS_KEY, JSON.stringify(backgrounds));
-        }
-        
-        function loadBackgrounds() {
-            const backgrounds = JSON.parse(localStorage.getItem(BACKGROUNDS_KEY) || '{}');
-            
-            for (let sectionId in backgrounds) {
-                const section = document.getElementById(sectionId);
-                if (section && backgrounds[sectionId]) {
-                    section.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${backgrounds[sectionId]})`;
-                    section.style.backgroundSize = 'cover';
-                    section.style.backgroundPosition = 'center';
-                    section.style.backgroundAttachment = 'fixed';
-                }
-            }
-        }
-        
-        function saveChanges() {
-            // Save all text content
-            const content = {};
-            const editables = document.querySelectorAll('.editable');
-            
-            editables.forEach((el, index) => {
-                content[`element_${index}`] = el.innerHTML;
-            });
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-            
-            // Save entire page structure for dynamic elements
-            const eventsGrid = document.getElementById('eventsGrid');
-            const boardGrid = document.getElementById('boardGrid');
-            const customSections = document.getElementById('customSectionsContainer');
-            
-            localStorage.setItem('filipinoclub_events', eventsGrid.innerHTML);
-            localStorage.setItem('filipinoclub_board', boardGrid.innerHTML);
-            localStorage.setItem('filipinoclub_custom_sections', customSections.innerHTML);
-            
-            // Show save indicator
-            const indicator = document.getElementById('saveIndicator');
-            indicator.classList.add('show');
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 2000);
-        }
-        
-        function changePassword() {
-            const currentPassword = localStorage.getItem(PASSWORD_KEY);
+        async function changePassword() {
+            const currentPassword = localStorage.getItem('filipinoclub_password') || DEFAULT_PASSWORD;
             const oldPassword = prompt('Enter current password:');
             
             if (oldPassword !== currentPassword) {
@@ -1238,48 +1098,195 @@
                 return;
             }
             
-            localStorage.setItem(PASSWORD_KEY, newPassword);
+            localStorage.setItem('filipinoclub_password', newPassword);
+            await saveToDatabase();
             alert('✓ Password changed successfully! Please remember your new password.');
         }
         
-        function loadContent() {
-            const savedContent = localStorage.getItem(STORAGE_KEY);
+        function changeBackground(sectionId) {
+            const input = document.getElementById('bgImageInput');
             
-            if (savedContent) {
-                const content = JSON.parse(savedContent);
-                const editables = document.querySelectorAll('.editable');
+            input.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
                 
-                editables.forEach((el, index) => {
-                    if (content[`element_${index}`]) {
-                        el.innerHTML = content[`element_${index}`];
-                    }
-                });
-            }
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const section = document.getElementById(sectionId);
+                    const imageData = event.target.result;
+                    
+                    section.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${imageData})`;
+                    section.style.backgroundSize = 'cover';
+                    section.style.backgroundPosition = 'center';
+                    section.style.backgroundAttachment = 'fixed';
+                    
+                    await saveToDatabase();
+                    showSaveIndicator('✓ Background Saved!');
+                };
+                reader.readAsDataURL(file);
+            };
             
-            // Load dynamic elements
-            const savedEvents = localStorage.getItem('filipinoclub_events');
-            const savedBoard = localStorage.getItem('filipinoclub_board');
-            const savedCustomSections = localStorage.getItem('filipinoclub_custom_sections');
+            input.click();
+        }
+        
+        function uploadMemberPhoto(photoId, memberId) {
+            const input = document.getElementById('memberPhotoInput');
             
-            if (savedEvents) {
-                document.getElementById('eventsGrid').innerHTML = savedEvents;
-            }
+            input.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const photoElement = document.getElementById(photoId);
+                    const imageData = event.target.result;
+                    
+                    photoElement.style.backgroundImage = `url(${imageData})`;
+                    photoElement.style.fontSize = '0';
+                    
+                    await saveToDatabase();
+                    showSaveIndicator('✓ Photo Uploaded!');
+                };
+                reader.readAsDataURL(file);
+            };
             
-            if (savedBoard) {
-                document.getElementById('boardGrid').innerHTML = savedBoard;
-            }
+            input.click();
+        }
+        
+        async function addEvent() {
+            const grid = document.getElementById('eventsGrid');
+            const index = document.querySelectorAll('[data-event-id]').length;
             
-            if (savedCustomSections) {
-                document.getElementById('customSectionsContainer').innerHTML = savedCustomSections;
+            const newEvent = document.createElement('div');
+            newEvent.className = 'event-card deletable';
+            newEvent.setAttribute('data-event-id', index);
+            newEvent.innerHTML = `
+                <button class="delete-btn" onclick="deleteEvent(${index})">✕</button>
+                <h4 class="editable" data-field="event-${index}-title" contenteditable="true">New Event</h4>
+                <p class="date editable" data-field="event-${index}-date" contenteditable="true">Date • Time</p>
+                <p class="editable" data-field="event-${index}-description" contenteditable="true">Click to add event description...</p>
+            `;
+            grid.appendChild(newEvent);
+            
+            newEvent.querySelectorAll('.editable').forEach(el => {
+                el.addEventListener('blur', saveToDatabase);
+            });
+            
+            await saveToDatabase();
+        }
+        
+        async function deleteEvent(index) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                const eventEl = document.querySelector(`[data-event-id="${index}"]`);
+                eventEl.remove();
+                await saveToDatabase();
             }
         }
         
-        // Auto-save on blur when in edit mode
-        document.addEventListener('blur', (e) => {
-            if (editMode && e.target.classList.contains('editable')) {
-                saveChanges();
+        async function addBoardMember() {
+            const grid = document.getElementById('boardGrid');
+            const index = document.querySelectorAll('[data-member-id]').length;
+            
+            const newMember = document.createElement('div');
+            const photoId = `member-photo-${index}`;
+            newMember.className = 'board-member deletable';
+            newMember.setAttribute('data-member-id', index);
+            newMember.innerHTML = `
+                <button class="delete-btn" onclick="deleteBoardMember(${index})">✕</button>
+                <div class="member-photo editable" id="${photoId}" data-field="member-${index}-photo" contenteditable="true">
+                    AB
+                    <div class="member-photo-upload" onclick="uploadMemberPhoto('${photoId}', ${index})">📷 Upload Photo</div>
+                </div>
+                <h4 class="editable" data-field="member-${index}-name" contenteditable="true">Name</h4>
+                <p class="position editable" data-field="member-${index}-position" contenteditable="true">Position</p>
+                <p class="email editable" data-field="member-${index}-email" contenteditable="true">email@filipinoclub.org</p>
+            `;
+            grid.appendChild(newMember);
+            
+            newMember.querySelectorAll('.editable').forEach(el => {
+                el.addEventListener('blur', saveToDatabase);
+            });
+            
+            await saveToDatabase();
+        }
+        
+        async function deleteBoardMember(index) {
+            if (confirm('Are you sure you want to delete this board member?')) {
+                const memberEl = document.querySelector(`[data-member-id="${index}"]`);
+                memberEl.remove();
+                await saveToDatabase();
             }
-        }, true);
+        }
+        
+        async function addCustomSection() {
+            const container = document.getElementById('customSectionsContainer');
+            const index = document.querySelectorAll('#customSectionsContainer section').length;
+            const sectionId = 'custom-section-' + Date.now();
+            
+            const newSection = document.createElement('section');
+            newSection.className = 'custom-section bg-changeable deletable';
+            newSection.id = sectionId;
+            newSection.innerHTML = `
+                <button class="delete-btn" onclick="deleteCustomSection(${index})" style="top: 50px; right: 50px; font-size: 20px; padding: 10px 15px;">✕</button>
+                <button class="bg-change-btn" onclick="changeBackground('${sectionId}')">🖼️ Change Background</button>
+                <div class="container">
+                    <h2 class="section-title editable" data-field="custom-${index}-title" contenteditable="true">New Section Title</h2>
+                    <p class="about-text editable" data-field="custom-${index}-text" contenteditable="true">
+                        Click to edit this section. Add your content here!
+                    </p>
+                </div>
+            `;
+            container.appendChild(newSection);
+            
+            newSection.querySelectorAll('.editable').forEach(el => {
+                el.addEventListener('blur', saveToDatabase);
+            });
+            
+            await saveToDatabase();
+        }
+        
+        async function deleteCustomSection(index) {
+            if (confirm('Are you sure you want to delete this section?')) {
+                const sections = document.querySelectorAll('#customSectionsContainer section');
+                sections[index].remove();
+                await saveToDatabase();
+            }
+        }
+        
+        async function editSocialLinks() {
+            const container = document.getElementById('socialLinks');
+            const currentLinks = Array.from(container.querySelectorAll('a')).map(a => ({
+                platform: a.getAttribute('data-platform'),
+                url: a.href
+            }));
+            
+            const platforms = ['facebook', 'instagram', 'twitter'];
+            const newLinks = [];
+            
+            for (const platform of platforms) {
+                const current = currentLinks.find(l => l.platform === platform);
+                const url = prompt(`Enter ${platform.charAt(0).toUpperCase() + platform.slice(1)} URL (leave blank to skip):`, current?.url || '');
+                if (url && url !== '#') {
+                    newLinks.push({ platform, url });
+                }
+            }
+            
+            renderSocialLinks(newLinks);
+            await saveToDatabase();
+            showSaveIndicator('✓ Social Links Updated!');
+        }
+        
+        async function deleteSocialLink(index) {
+            if (confirm('Are you sure you want to delete this social media link?')) {
+                const links = Array.from(document.querySelectorAll('#socialLinks a')).map(a => ({
+                    platform: a.getAttribute('data-platform'),
+                    url: a.href
+                }));
+                links.splice(index, 1);
+                renderSocialLinks(links);
+                await saveToDatabase();
+            }
+        }
     </script>
 </body>
 </html>
