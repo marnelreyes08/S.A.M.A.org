@@ -783,7 +783,8 @@
         const SUPABASE_URL = 'https://qivbayioflggugjyrsny.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpdmJheWlvZmxnZ3Vnanlyc255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MzQzNDUsImV4cCI6MjA4NTQxMDM0NX0.-Tnqrtgo2VeJOt2Yzk13lBUt81gb0m-xjr2-wRFso_I';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let editMode = false;
         let isAuthenticated = false;
